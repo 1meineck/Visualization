@@ -171,6 +171,9 @@ public class MouseController implements MouseListener,MouseMotionListener {
 		/*
 		 * Aufgabe 1.2
 		 */
+		view.setTranslateX((view.getTranslateX()-(x-mouseOffsetX))/2); 
+		view.setTranslateY((view.getTranslateY()-(y-mouseOffsetY))/2);
+		
 		if (fisheyeMode){
 			/*
 			 * handle fisheye mode interactions

@@ -39,19 +39,31 @@ public class View extends JPanel{
 	public void paint(Graphics g) {
 		
 		Graphics2D g2D = (Graphics2D) g;
-		Graphics2D g2Dtest = (Graphics2D) g;
 		
 		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 		g2D.clearRect(0, 0, getWidth(), getHeight());
+		g2D.translate(translateX, translateY);
 		g2D.scale(scale,  scale);
 		paintDiagram(g2D);
 		
+		g2D.translate(-translateX, -translateY);		
+		g2D.translate((getWidth()-getWidth()/4)/scale, 0.0);
+		g2D.scale(0.25/scale, 0.25/scale);
 		
-		g2Dtest.scale(0.25/scale, 0.25/scale);
+		g2D.clearRect(0, 0, getWidth(), 750);
 		overviewRect.setRect(0, 0, getWidth(), 750);
-		g2Dtest.fill(overviewRect);
-		g2Dtest.draw(overviewRect);
-		paintDiagram(g2Dtest);
+		//g2D.fill(overviewRect);
+		g2D.draw(overviewRect);
+		paintDiagram(g2D); 
+		
+		g2D.translate(-translateX, -translateY);
+		
+		marker.setRect(0, 0, getWidth()/scale, getHeight()/scale);
+		g2D.draw(marker);
+		//paintDiagram(g2D);
+
+		
+		
 		
 		
 		
