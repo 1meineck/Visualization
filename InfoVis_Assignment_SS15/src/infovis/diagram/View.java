@@ -20,7 +20,7 @@ public class View extends JPanel{
 	private double translateX= 0;
 	private double translateY=0;
 	private Rectangle2D marker = new Rectangle2D.Double();
-	private Rectangle2D overviewRect = new Rectangle2D.Double();   
+	private Rectangle2D overviewRect = new Rectangle2D.Double(); 
 
 	public Model getModel() {
 		return model;
@@ -39,12 +39,23 @@ public class View extends JPanel{
 	public void paint(Graphics g) {
 		
 		Graphics2D g2D = (Graphics2D) g;
+		Graphics2D g2Dtest = (Graphics2D) g;
+		
 		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 		g2D.clearRect(0, 0, getWidth(), getHeight());
-		
-		
-		
+		g2D.scale(scale,  scale);
 		paintDiagram(g2D);
+		
+		
+		g2Dtest.scale(0.25/scale, 0.25/scale);
+		overviewRect.setRect(0, 0, getWidth(), 750);
+		g2Dtest.fill(overviewRect);
+		g2Dtest.draw(overviewRect);
+		paintDiagram(g2Dtest);
+		
+		
+		
+		
 		
 		
 		
