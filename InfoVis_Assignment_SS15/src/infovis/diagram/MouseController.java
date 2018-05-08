@@ -109,6 +109,8 @@ public class MouseController implements MouseListener,MouseMotionListener {
 			 */
 			mouseOffsetX = x - selectedElement.getX() * scale ;
 			mouseOffsetY = y - selectedElement.getY() * scale ;	
+			
+			System.out.println(mouseOffsetX + " | " + mouseOffsetY );
 		}
 		
 	}
@@ -171,8 +173,10 @@ public class MouseController implements MouseListener,MouseMotionListener {
 		/*
 		 * Aufgabe 1.2
 		 */
-		view.setTranslateX((view.getTranslateX()-(x-mouseOffsetX))/2); 
-		view.setTranslateY((view.getTranslateY()-(y-mouseOffsetY))/2);
+		
+		System.out.println(selectedElement);
+		view.setTranslateX(view.getTranslateX()- (x-mouseOffsetX)/scale); 
+		view.setTranslateY(view.getTranslateY()- (y-mouseOffsetY)/scale);
 		
 		if (fisheyeMode){
 			/*
