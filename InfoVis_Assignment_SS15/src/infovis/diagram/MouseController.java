@@ -103,20 +103,20 @@ public class MouseController implements MouseListener,MouseMotionListener {
 			view.repaint();
 		} else {
 			
-			selectedElement = getElementContainingPosition(x/scale,y/scale);
+			selectedElement = getElementContainingPosition((x-view.getTranslateX())/scale,(y-view.getTranslateY())/scale);
 			/*
 			 * calculate offset
 			 */
-			mouseOffsetX = x - selectedElement.getX() * scale ;
-			mouseOffsetY = y - selectedElement.getY() * scale ;	
+			mouseOffsetX = x - (selectedElement.getX() * scale + view.getTranslateX());
+			mouseOffsetY = y - (selectedElement.getY() * scale + view.getTranslateY());	
 			
 			System.out.println(mouseOffsetX + " | " + mouseOffsetY );
 		}
 		
 	}
 	public void mouseReleased(MouseEvent arg0){
-		int x = arg0.getX();
-		int y = arg0.getY();
+		double x = (arg0.getX()-view.getTranslateX())/view.getScale();
+		double y = (arg0.getY()-view.getTranslateY())/view.getScale();
 		
 		if (drawingEdge != null){
 			Element to = getElementContainingPosition(x, y);
@@ -174,9 +174,6 @@ public class MouseController implements MouseListener,MouseMotionListener {
 		 * Aufgabe 1.2
 		 */
 		
-		System.out.println(selectedElement);
-		view.setTranslateX(view.getTranslateX()- (x-mouseOffsetX)/scale); 
-		view.setTranslateY(view.getTranslateY()- (y-mouseOffsetY)/scale);
 		
 		if (fisheyeMode){
 			/*
@@ -184,10 +181,13 @@ public class MouseController implements MouseListener,MouseMotionListener {
 			 */
 			view.repaint();
 		} else if (edgeDrawMode){
-			drawingEdge.setX(e.getX());
-			drawingEdge.setY(e.getY());
-		}else if(selectedElement != null){
-			selectedElement.updatePosition((e.getX()-mouseOffsetX)/scale, (e.getY()-mouseOffsetY) /scale);
+			drawingEdge.setX(e.getX()/scale);
+			drawingEdge.setY(e.getY()/scale);
+		}else if(selectedElement != null && selectedElement.getID()>0){
+			selectedElement.updatePosition(((e.getX()-mouseOffsetX)-view.getTranslateX())/scale, ((e.getY()-mouseOffsetY)-view.getTranslateY()) /scale);
+		}else {	
+			view.setTranslateX(((e.getX()-mouseOffsetX))); 
+			view.setTranslateY(((e.getY()-mouseOffsetY)));
 		}
 		view.repaint();
 	}
