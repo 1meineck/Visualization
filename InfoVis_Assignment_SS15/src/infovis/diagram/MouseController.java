@@ -183,11 +183,12 @@ public class MouseController implements MouseListener,MouseMotionListener {
 		} else if (edgeDrawMode){
 			drawingEdge.setX(e.getX()/scale);
 			drawingEdge.setY(e.getY()/scale);
+		}else if(view.markerContains(x/scale/view.overviewScale, y/scale/view.overviewScale)) {
+			view.setTranslateX(- (x) / view.overviewScale * scale + view.getWidth()*0.5);
+			view.setTranslateY(- (y) / view.overviewScale * scale + view.getHeight()*0.5);
+			
 		}else if(selectedElement != null && selectedElement.getID()>0){
-			selectedElement.updatePosition(((e.getX()-mouseOffsetX)-view.getTranslateX())/scale, ((e.getY()-mouseOffsetY)-view.getTranslateY()) /scale);
-		}else {	
-			view.setTranslateX(((e.getX()-mouseOffsetX))); 
-			view.setTranslateY(((e.getY()-mouseOffsetY)));
+			selectedElement.updatePosition(((e.getX()-mouseOffsetX)-view.getTranslateX())/scale, ((e.getY()-mouseOffsetY)-view.getTranslateY()) /scale);	
 		}
 		view.repaint();
 	}

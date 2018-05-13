@@ -21,6 +21,7 @@ public class View extends JPanel{
 	private double translateY=0;
 	private Rectangle2D marker = new Rectangle2D.Double();
 	private Rectangle2D overviewRect = new Rectangle2D.Double(); 
+	public double overviewScale = 0.25;
 
 	public Model getModel() {
 		return model;
@@ -48,9 +49,10 @@ public class View extends JPanel{
 		g2D.scale(scale,  scale);
 		paintDiagram(g2D);
 		
-		g2D.translate(-translateX/scale, -translateY/scale);		
-		g2D.translate((getWidth()-getWidth()/4)/scale, 0.0);
-		g2D.scale(0.25/scale, 0.25/scale);
+		g2D.scale(1/scale, 1/scale);
+		g2D.translate(-translateX, -translateY);		
+		//g2D.translate(getWidth()-getWidth()/4, 0.0);
+		g2D.scale(overviewScale, overviewScale);
 		
 		// Draw overview
 		g2D.clearRect(0, 0, getWidth(), getHeight());
@@ -64,6 +66,7 @@ public class View extends JPanel{
 		// Draw marker
 		marker.setRect(0, 0, getWidth()/scale, getHeight()/scale);
 		g2D.draw(marker);
+		System.out.println(marker.getX() + " | " + marker.getY());
 		
 	}
 	private void paintDiagram(Graphics2D g2D){
@@ -100,8 +103,9 @@ public class View extends JPanel{
 	public Rectangle2D getMarker(){
 		return marker;
 	}
-	public boolean markerContains(int x, int y){
-		return marker.contains(x, y);
+	public boolean markerContains(double d, double e){
+		return marker.contains(d, e);
 	}
+
 }
  
