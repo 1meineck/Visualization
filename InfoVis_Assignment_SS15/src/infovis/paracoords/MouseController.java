@@ -1,6 +1,8 @@
 package infovis.paracoords;
 
 import infovis.scatterplot.Model;
+import infovis.scatterplot.Data; 
+import infovis.scatterplot.Range;
 
 import java.awt.Shape;
 import java.awt.event.MouseEvent;
