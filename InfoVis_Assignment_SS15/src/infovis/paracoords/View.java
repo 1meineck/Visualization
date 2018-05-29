@@ -8,6 +8,8 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
@@ -15,7 +17,7 @@ import javax.swing.JPanel;
 
 public class View extends JPanel {
 	private Model model = null;
-	private Rectangle2D markerRectangle = new Rectangle2D.Double(0,0,0,0);
+	private Rectangle2D markerRectangle = new Rectangle2D.Double(230,230,50,50);
 	private int lineLength = 0; 
 	private int lineDistance = 0;
 	private int elementDistance = 0;
@@ -34,6 +36,8 @@ public class View extends JPanel {
 
 		g2d.setStroke(new BasicStroke(1));
 		g2d.setColor(Color.BLACK);
+		
+		g2d.draw(markerRectangle);
 
 		// draw Labels
 		for (int i = 0; i < model.getDim(); i++) {
@@ -70,12 +74,32 @@ public class View extends JPanel {
 				g2d.setColor(model.getList().get(k).getColor());
 				g2d.drawRect((int)(point.getX()),(int)(point.getY()), pointSize, pointSize);*/
 			}
-			g2d.setColor(Color.GRAY);
-			g2d.drawPolyline(xPoints, yPoints, model.getDim());
+			drawLines(g2d, xPoints, yPoints);
+			
+				
+			//g2d.drawPolyline(xPoints, yPoints, model.getDim());
 			g2d.setColor(Color.black);
 		}
 
 
+	}
+
+	private void drawLines(Graphics2D g2d, int[] xPoints, int[] yPoints) {
+		// TODO Auto-generated method stub
+		g2d.setColor(Color.GRAY);
+		//Polyline x = drawPolyline(xPoints, yPoints, model.getDim());
+		Line2D.Double[] lines = new Line2D.Double[xPoints.length-1];
+		for (int j = 0; j<xPoints.length-1; j++) {
+			Line2D.Double line = new Line2D.Double(xPoints[j], yPoints[j], xPoints[j+1], yPoints[j+1]); 
+			lines[j]=line;
+			if(line.intersects(markerRectangle)) {
+				g2d.setColor(Color.red);
+			}
+		}
+		for (int j = 0; j<lines.length; j++) {
+			g2d.draw(lines[j]);
+		}
+		
 	}
 
 	private int calculatePosition(int i, int size) {
@@ -110,4 +134,8 @@ public class View extends JPanel {
 		lineDistance = (getWidth()-2*borderSize)/(model.getDim()-1);
 		elementDistance = lineLength/model.getList().size();
 	}
+	public Rectangle2D getMarker() {
+		return markerRectangle;
+	}
+	
 }

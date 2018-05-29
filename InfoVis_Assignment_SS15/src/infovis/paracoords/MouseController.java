@@ -14,6 +14,9 @@ public class MouseController implements MouseListener, MouseMotionListener {
 	private Model model = null;
 	Shape currentShape = null;
 	
+	private int xStart = 0;
+	private int yStart = 0;
+	
 	public void mouseClicked(MouseEvent e) {
 		
 	}
@@ -27,7 +30,11 @@ public class MouseController implements MouseListener, MouseMotionListener {
 	}
 
 	public void mousePressed(MouseEvent e) {
-
+		view.getMarker().setRect(0,0,0,0);
+		view.repaint();
+		
+		xStart = e.getX();
+		yStart = e.getY();
 	}
 
 	public void mouseReleased(MouseEvent e) {
@@ -35,7 +42,11 @@ public class MouseController implements MouseListener, MouseMotionListener {
 	}
 
 	public void mouseDragged(MouseEvent e) {
-
+		int x = e.getX()- xStart;
+		int y = e.getY() - yStart;
+		view.getMarker().setRect(xStart, yStart,x,y);
+		//TODO: this should be calculated correctly in view
+		view.repaint();
 	}
 
 	public void mouseMoved(MouseEvent e) {
