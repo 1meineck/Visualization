@@ -4,6 +4,7 @@ import infovis.scatterplot.Model;
 import infovis.scatterplot.Data; 
 import infovis.scatterplot.Range;
 
+import java.awt.Color;
 import java.awt.Shape;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -31,6 +32,7 @@ public class MouseController implements MouseListener, MouseMotionListener {
 
 	public void mousePressed(MouseEvent e) {
 		view.getMarker().setRect(0,0,0,0);
+		view.setMarkerActive();
 		view.repaint();
 		
 		xStart = e.getX();
@@ -38,7 +40,11 @@ public class MouseController implements MouseListener, MouseMotionListener {
 	}
 
 	public void mouseReleased(MouseEvent e) {
-
+		view.setMarkerInactive();
+		System.out.println(view.getMarker().getHeight());
+		view.getMarker().setRect(0,0,0,0);
+		view.repaint();
+		
 	}
 
 	public void mouseDragged(MouseEvent e) {

@@ -17,7 +17,9 @@ import javax.swing.JPanel;
 
 public class View extends JPanel {
 	private Model model = null;
-	private Rectangle2D markerRectangle = new Rectangle2D.Double(230,230,50,50);
+	private Rectangle2D markerRectangle = new Rectangle2D.Double(0,0,0,0);
+	private Rectangle2D savedMarker = new Rectangle2D.Double(0,0,0,0);
+	private boolean markerActive = true;
 	private int lineLength = 0; 
 	private int lineDistance = 0;
 	private int elementDistance = 0;
@@ -36,7 +38,7 @@ public class View extends JPanel {
 
 		g2d.setStroke(new BasicStroke(1));
 		g2d.setColor(Color.BLACK);
-		
+
 		g2d.draw(markerRectangle);
 
 		// draw Labels
@@ -75,8 +77,8 @@ public class View extends JPanel {
 				g2d.drawRect((int)(point.getX()),(int)(point.getY()), pointSize, pointSize);*/
 			}
 			drawLines(g2d, xPoints, yPoints);
-			
-				
+
+
 			//g2d.drawPolyline(xPoints, yPoints, model.getDim());
 			g2d.setColor(Color.black);
 		}
@@ -92,14 +94,20 @@ public class View extends JPanel {
 		for (int j = 0; j<xPoints.length-1; j++) {
 			Line2D.Double line = new Line2D.Double(xPoints[j], yPoints[j], xPoints[j+1], yPoints[j+1]); 
 			lines[j]=line;
-			if(line.intersects(markerRectangle)) {
-				g2d.setColor(Color.red);
+			if(markerActive) {
+				if(line.intersects(markerRectangle)) {
+					g2d.setColor(Color.red);
+				}
+			}else {
+				if(line.intersects(savedMarker)) {
+					g2d.setColor(Color.red);
+				}
 			}
 		}
 		for (int j = 0; j<lines.length; j++) {
 			g2d.draw(lines[j]);
 		}
-		
+
 	}
 
 	private int calculatePosition(int i, int size) {
@@ -137,5 +145,12 @@ public class View extends JPanel {
 	public Rectangle2D getMarker() {
 		return markerRectangle;
 	}
-	
+	public void setMarkerActive() {
+		markerActive = true; 
+	}
+	public void setMarkerInactive() {
+		markerActive = false; 
+		savedMarker = new Rectangle2D.Double(markerRectangle.getX(), markerRectangle.getY(), markerRectangle.getWidth(), markerRectangle.getHeight());
+	}
+
 }
