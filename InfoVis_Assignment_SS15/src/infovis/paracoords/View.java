@@ -12,6 +12,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
@@ -25,6 +26,8 @@ public class View extends JPanel {
 	private int elementDistance = 0;
 	private int borderSize = 100;  
 	private int textSpace = 10;
+	private ArrayList<int[]> xList; 
+	private ArrayList<int[]> yList;
 
 	@Override
 	public void paint(Graphics g) {
@@ -33,8 +36,6 @@ public class View extends JPanel {
 		g2d.setColor(Color.BLACK);
 
 		g2d.clearRect(0, 0, getWidth(), getHeight());
-		int[] yPoints = new int[model.getDim()];
-		int[] xPoints = new int[model.getDim()]; 
 
 		g2d.setStroke(new BasicStroke(1));
 		g2d.setColor(Color.BLACK);
@@ -54,42 +55,55 @@ public class View extends JPanel {
 			g2d.drawString(labely, textSpace,  yPosition);
 		}
 
-		//draw Points in current Grid
-		for (int k = 0; k < model.getList().size(); k++ ){
-			for (int i =0; i<model.getDim(); i++) {
-				int xPosition = i*lineDistance+borderSize;
-				g2d.drawLine((int) xPosition, borderSize, (int) xPosition, getHeight()-borderSize);
+		if (xList == null) {
+			xList = new ArrayList<int[]>();
+			yList= new ArrayList<int[]>();
+			//draw Points in current Grid
+			for (int k = 0; k < model.getList().size(); k++ ){
+				int[] yPoints = new int[model.getDim()];
+				int[] xPoints = new int[model.getDim()]; 
+				for (int i =0; i<model.getDim(); i++) {
+					int xPosition = i*lineDistance+borderSize;
+					g2d.drawLine((int) xPosition, borderSize, (int) xPosition, getHeight()-borderSize);
 
 
-				int yPosition = calculatePosY(i, k);
+					int yPosition = calculatePosY(i, k);
 
-				xPoints[i] = xPosition; 
+					xPoints[i] = xPosition; 
 
-				yPoints[i] = yPosition;
-
-
-
-
-				/*Point2D point = calculatePoint(posX, posY, i, j, k);
-				//Point2D point = giveMePoint(i, j, k);
-				colorPoint(point, k); //TODO: this should probably happen somewhere else
-				g2d.setColor(model.getList().get(k).getColor());
-				g2d.drawRect((int)(point.getX()),(int)(point.getY()), pointSize, pointSize);*/
-			}
-			drawLines(g2d, xPoints, yPoints);
+					yPoints[i] = yPosition;
+				}
+				xList.add(xPoints);
+				yList.add(yPoints);
 
 
-			//g2d.drawPolyline(xPoints, yPoints, model.getDim());
-			g2d.setColor(Color.black);
+				//g2d.drawPolyline(xPoints, yPoints, model.getDim());
+				g2d.setColor(Color.black);
+			}}
+		drawParallelCoords(g2d);
+	}
+
+	private void changeAxis(int currentLocation, int newLocation) {
+		String label = model.getLabels().get(currentLocation); 
+		model.getLabels().remove(currentLocation); 
+		model.getLabels().add(newLocation, label);
+
+		// TODO recalculate axes
+	}
+	private void drawParallelCoords(Graphics2D g2d) {
+		for (int i = 0; i<model.getDim(); i++) {
+			int xPosition = i*lineDistance+borderSize;
+			g2d.drawLine((int) xPosition, borderSize, (int) xPosition, getHeight()-borderSize);
 		}
-
-
+		for (int i = 0; i < xList.size(); i++) {
+			int[] xPoints = xList.get(i); 
+			int[] yPoints = yList.get(i);
+			drawLines(g2d, xPoints, yPoints);
+		}
 	}
 
 	private void drawLines(Graphics2D g2d, int[] xPoints, int[] yPoints) {
-		// TODO Auto-generated method stub
 		g2d.setColor(Color.GRAY);
-		//Polyline x = drawPolyline(xPoints, yPoints, model.getDim());
 		Line2D.Double[] lines = new Line2D.Double[xPoints.length-1];
 		for (int j = 0; j<xPoints.length-1; j++) {
 			Line2D.Double line = new Line2D.Double(xPoints[j], yPoints[j], xPoints[j+1], yPoints[j+1]); 
@@ -108,11 +122,6 @@ public class View extends JPanel {
 			g2d.draw(lines[j]);
 		}
 
-	}
-
-	private int calculatePosition(int i, int size) {
-		// TODO Auto-generated method stub
-		return 0;
 	}
 
 	private int calculatePosY(int i, int k) {
@@ -136,7 +145,7 @@ public class View extends JPanel {
 	public void setModel(Model model) {
 		this.model = model;
 	}
-	//calculating the appropriate BoxSize for the current window Size
+	//calculating the axes
 	public void calculateLines() {
 		lineLength = getHeight()-2*borderSize; 
 		lineDistance = (getWidth()-2*borderSize)/(model.getDim()-1);
