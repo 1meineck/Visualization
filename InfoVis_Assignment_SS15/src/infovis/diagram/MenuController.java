@@ -94,4 +94,11 @@ public class MenuController {
 		mouseControllerAddedToView.setFisheyeMode(false);
 		//view.repaint();
 	}
+	public void startPlaceOverviewMode() {
+		mouseControllerAddedToView.setPlaceOverview(true);
+	}
+
+	public void stopPlaceOverviewMode() {
+		mouseControllerAddedToView.setPlaceOverview(false);
+	}
 }

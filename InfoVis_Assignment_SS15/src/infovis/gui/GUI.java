@@ -72,6 +72,8 @@ public class GUI {
 	private JToggleButton drawToggleButton = null;
 
 	private JToggleButton fisheyeToggleButton = null;
+	
+	private JToggleButton positionOverviewToggleButton = null;
 
 	private boolean showToolbar = false;
 
@@ -323,6 +325,8 @@ public class GUI {
 			jJToolBarBar.add(getNewLabelButton());
 			jJToolBarBar.add(getDrawToggleButton());
 			jJToolBarBar.add(getFisheyeToggleButton());
+			jJToolBarBar.add(getPositionOverviewToggleButton());
+			
 			jJToolBarBar.add(getJSlider());
 		}
 		return jJToolBarBar;
@@ -462,6 +466,28 @@ public class GUI {
 			
 		}
 		return fisheyeToggleButton;
+	}
+	
+	/**
+	 * This method initializes positionOverviewToggleButton	
+	 * 	
+	 * @return javax.swing.JToggleButton	
+	 */
+	private JToggleButton getPositionOverviewToggleButton() {
+		if (positionOverviewToggleButton == null) {
+			positionOverviewToggleButton = new JToggleButton();
+			positionOverviewToggleButton.setText("Place Overview");
+			positionOverviewToggleButton.addItemListener(new java.awt.event.ItemListener() {
+				public void itemStateChanged(java.awt.event.ItemEvent e) {
+					if (e.getStateChange() == ItemEvent.SELECTED){
+						MenuController.getInstance().startPlaceOverviewMode();
+					}else if (e.getStateChange() == ItemEvent.DESELECTED){
+						MenuController.getInstance().stopPlaceOverviewMode();
+					}
+				}
+			});
+		}
+		return positionOverviewToggleButton;
 	}
 
 	/**
