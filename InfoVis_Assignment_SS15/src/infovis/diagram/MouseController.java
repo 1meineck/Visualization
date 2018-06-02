@@ -27,6 +27,8 @@ public class MouseController implements MouseListener,MouseMotionListener {
 	private DrawingEdge drawingEdge = null;
 	private boolean fisheyeMode;
 	private boolean placeOverviewMode = false;
+	private Fisheye fisheye; 
+	private Model modelFish;
 
 	private GroupingRectangle groupRectangle;
 	/*
@@ -101,6 +103,10 @@ public class MouseController implements MouseListener,MouseMotionListener {
 			/*
 			 * do handle interactions in fisheye mode
 			 */
+			fisheye= new Fisheye(); 
+			fisheye.setMouseCoords(x, y, view);
+			Model modelFish = fisheye.transform(model, view);
+			view.setModel(modelFish);
 			view.repaint();
 
 		} else if (placeOverviewMode && view.overviewContains(view.toOverviewX(x), view.toOverviewY(y))) {
@@ -189,6 +195,10 @@ public class MouseController implements MouseListener,MouseMotionListener {
 			/*
 			 * handle fisheye mode interactions
 			 */
+			fisheye.setMouseCoords(x, y, view);
+			System.out.println(x + " | " + y);
+			modelFish = fisheye.transform(model, view);
+			view.setModel(modelFish);
 			view.repaint();
 		} else if (edgeDrawMode){
 			drawingEdge.setX(view.toModelX(e.getX()));
@@ -224,6 +234,10 @@ public class MouseController implements MouseListener,MouseMotionListener {
 			/*
 			 * handle fish eye initial call
 			 */
+			fisheye= new Fisheye(); 
+			fisheye.setMouseCoords(view.getWidth()/2, view.getHeight()/2, view);
+			Model modelFish = fisheye.transform(model, view);
+			view.setModel(modelFish);
 			view.repaint();
 		} else {
 			Debug.p("new Normal Layout");
