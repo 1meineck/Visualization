@@ -22,12 +22,15 @@ public class View extends JPanel {
 	private Rectangle2D savedMarker = new Rectangle2D.Double(0,0,0,0);
 	private boolean markerActive = true;
 	private int lineLength = 0; 
-	private int lineDistance = 0;
-	private int elementDistance = 0;
-	private int borderSize = 100;  
+	public int lineDistance = 0;
+	public int elementDistance = 0;
+	public int borderSize = 100;  
 	private int textSpace = 10;
-	private ArrayList<int[]> xList; 
+	int[] xPoints; 
 	private ArrayList<int[]> yList;
+	private boolean changeAxisMode = false;
+	private ArrayList<Integer> order;
+	private int currentPosition; 
 
 	@Override
 	public void paint(Graphics g) {
@@ -42,44 +45,43 @@ public class View extends JPanel {
 
 		g2d.draw(markerRectangle);
 
-		// draw Labels
+		xPoints = new int[model.getDim()]; 
+
+		if (order==null) {
+			order = new ArrayList<Integer>();
+			for (int i = 0; i<model.getDim(); i++) {
+				order.add(i);
+			}
+		}
+
+		// draw Coordinate System with Labels
 		for (int i = 0; i < model.getDim(); i++) {
 			int xPosition = i*lineDistance+borderSize;
-			String labelx = model.getLabels().get(i);
+			xPoints[i] = xPosition;
+			g2d.drawLine((int) xPosition, borderSize, (int) xPosition, getHeight()-borderSize);
+
+			String labelx = model.getLabels().get(order.get(i));
 			g2d.drawString(labelx, xPosition-labelx.length()*2, borderSize/2);}
 
-		for (int k = 0; k < model.getList().size(); k++ ){
+		/*for (int k = 0; k < model.getList().size(); k++ ){
 			int yPosition= borderSize + elementDistance -textSpace;
 			elementDistance += lineLength/model.getList().size();
 			String labely = model.getList().get(k).getLabel();
 			g2d.drawString(labely, textSpace,  yPosition);
-		}
+		}*/
 
-		if (xList == null) {
-			xList = new ArrayList<int[]>();
+		if (!changeAxisMode ) {
 			yList= new ArrayList<int[]>();
-			//draw Points in current Grid
 			for (int k = 0; k < model.getList().size(); k++ ){
 				int[] yPoints = new int[model.getDim()];
-				int[] xPoints = new int[model.getDim()]; 
 				for (int i =0; i<model.getDim(); i++) {
-					int xPosition = i*lineDistance+borderSize;
-					g2d.drawLine((int) xPosition, borderSize, (int) xPosition, getHeight()-borderSize);
-
-
 					int yPosition = calculatePosY(i, k);
-
-					xPoints[i] = xPosition; 
-
 					yPoints[i] = yPosition;
 				}
-				xList.add(xPoints);
 				yList.add(yPoints);
-
-
-				//g2d.drawPolyline(xPoints, yPoints, model.getDim());
 				g2d.setColor(Color.black);
-			}}
+			}
+		} 
 		drawParallelCoords(g2d);
 	}
 
@@ -91,35 +93,38 @@ public class View extends JPanel {
 		// TODO recalculate axes
 	}
 	private void drawParallelCoords(Graphics2D g2d) {
-		for (int i = 0; i<model.getDim(); i++) {
+		/*for (int i = 0; i<model.getDim(); i++) {
 			int xPosition = i*lineDistance+borderSize;
 			g2d.drawLine((int) xPosition, borderSize, (int) xPosition, getHeight()-borderSize);
-		}
-		for (int i = 0; i < xList.size(); i++) {
-			int[] xPoints = xList.get(i); 
-			int[] yPoints = yList.get(i);
-			drawLines(g2d, xPoints, yPoints);
-		}
+		}*/
+
+		drawLines(g2d);
+
 	}
 
-	private void drawLines(Graphics2D g2d, int[] xPoints, int[] yPoints) {
-		g2d.setColor(Color.GRAY);
-		Line2D.Double[] lines = new Line2D.Double[xPoints.length-1];
-		for (int j = 0; j<xPoints.length-1; j++) {
-			Line2D.Double line = new Line2D.Double(xPoints[j], yPoints[j], xPoints[j+1], yPoints[j+1]); 
-			lines[j]=line;
-			if(markerActive) {
-				if(line.intersects(markerRectangle)) {
-					g2d.setColor(Color.red);
-				}
-			}else {
-				if(line.intersects(savedMarker)) {
-					g2d.setColor(Color.red);
+	private void drawLines(Graphics2D g2d) {
+		for (int i = 0; i < yList.size(); i++) {
+			int[] yPoints = yList.get(i);
+			g2d.setColor(Color.GRAY);
+			Line2D.Double[] lines = new Line2D.Double[xPoints.length-1];
+			for (int j = 0; j<yPoints.length-1; j++) {
+
+				Line2D.Double line = new Line2D.Double(xPoints[j], yPoints[order.get(j)], xPoints[j+1], yPoints[order.get(j+1)]);
+				lines[j]=line;
+				if(markerActive) {
+					if(line.intersects(markerRectangle)) {
+						g2d.setColor(Color.red);
+						System.out.println(j);
+					}
+				}else {
+					if(line.intersects(savedMarker)) {
+						g2d.setColor(Color.red);
+					}
 				}
 			}
-		}
-		for (int j = 0; j<lines.length; j++) {
-			g2d.draw(lines[j]);
+			for (int j = 0; j<lines.length; j++) {
+				g2d.draw(lines[j]);
+			}
 		}
 
 	}
@@ -128,7 +133,6 @@ public class View extends JPanel {
 		double yValue = model.getList().get(k).getValues()[i];
 		double maxY = model.getRanges().get(i).getMax();
 		double minY = model.getRanges().get(i).getMin();
-		//int yPoint = (int)(y + borderSizeIntern + (boxSize-2*borderSizeIntern)*yPos);
 		int yPosition = (int) (((1 - ((maxY-yValue) /(maxY - minY)))*(getHeight()-2*borderSize)))+borderSize;
 		return yPosition;
 	}
@@ -160,6 +164,18 @@ public class View extends JPanel {
 	public void setMarkerInactive() {
 		markerActive = false; 
 		savedMarker = new Rectangle2D.Double(markerRectangle.getX(), markerRectangle.getY(), markerRectangle.getWidth(), markerRectangle.getHeight());
+	}
+
+	public void changeAxisMode(boolean b, int axis) {
+		currentPosition = axis;
+		changeAxisMode = b;
+	}
+
+	public void changeOrder(int newPosition) {
+		int x = order.get(currentPosition);
+
+		order.remove(currentPosition);
+		order.add(newPosition, x);
 	}
 
 }
