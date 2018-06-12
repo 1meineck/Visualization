@@ -1,16 +1,11 @@
 package infovis.paracoords;
 
 import infovis.scatterplot.Model;
-import infovis.scatterplot.Data; 
-import infovis.scatterplot.Range;
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
-import java.awt.geom.Path2D;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
@@ -19,22 +14,19 @@ import javax.swing.JPanel;
 public class View extends JPanel {
 	private Model model = null;
 	private Rectangle2D markerRectangle = new Rectangle2D.Double(0,0,0,0);
-	private Rectangle2D savedMarker = new Rectangle2D.Double(0,0,0,0);
-	private boolean markerActive = true;
-	private int lineLength = 0; 
+	private boolean markerActive = false;
 	public int lineDistance = 0;
-	public int elementDistance = 0;
 	public int borderSize = 100;  
-	private int textSpace = 10;
 	int[] xPoints; 
 	private ArrayList<int[]> yList;
-	private boolean changeAxisMode = false;
 	private ArrayList<Integer> order;
-	private int currentPosition; 
+	private int currentPosition;
+	private Color[] colorList;
+	private ArrayList<Line2D.Double[]> lineList; 
 
 	@Override
 	public void paint(Graphics g) {
-		calculateLines(); 
+		calculateAxes(); 
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.setColor(Color.BLACK);
 
@@ -55,80 +47,88 @@ public class View extends JPanel {
 		}
 
 		// draw Coordinate System with Labels
-		for (int i = 0; i < model.getDim(); i++) {
-			int xPosition = i*lineDistance+borderSize;
-			xPoints[i] = xPosition;
-			g2d.drawLine((int) xPosition, borderSize, (int) xPosition, getHeight()-borderSize);
-
-			String labelx = model.getLabels().get(order.get(i));
-			g2d.drawString(labelx, xPosition-labelx.length()*2, borderSize/2);}
-
-		/*for (int k = 0; k < model.getList().size(); k++ ){
-			int yPosition= borderSize + elementDistance -textSpace;
-			elementDistance += lineLength/model.getList().size();
-			String labely = model.getList().get(k).getLabel();
-			g2d.drawString(labely, textSpace,  yPosition);
-		}*/
-
-		if (!changeAxisMode ) {
-			yList= new ArrayList<int[]>();
-			for (int k = 0; k < model.getList().size(); k++ ){
-				int[] yPoints = new int[model.getDim()];
-				for (int i =0; i<model.getDim(); i++) {
-					int yPosition = calculatePosY(i, k);
-					yPoints[i] = yPosition;
-				}
-				yList.add(yPoints);
-				g2d.setColor(Color.black);
+		drawCoordinateSystem(g2d);
+		
+		// create yList with all y Positions of each element in the model
+		createYPositions();
+		
+		// set up coloring of Lines
+		if (colorList == null) {
+			colorList = new Color[yList.size()];
+			for (int i = 0; i<colorList.length; i++) {
+				colorList[i]=Color.gray;
 			}
-		} 
-		drawParallelCoords(g2d);
-	}
+		}
 
-	private void changeAxis(int currentLocation, int newLocation) {
-		String label = model.getLabels().get(currentLocation); 
-		model.getLabels().remove(currentLocation); 
-		model.getLabels().add(newLocation, label);
-
-		// TODO recalculate axes
-	}
-	private void drawParallelCoords(Graphics2D g2d) {
-		/*for (int i = 0; i<model.getDim(); i++) {
-			int xPosition = i*lineDistance+borderSize;
-			g2d.drawLine((int) xPosition, borderSize, (int) xPosition, getHeight()-borderSize);
-		}*/
-
+		// calculate the lines for each element in the model and set the color for the lines in the colorList to red, if they were selected by the marker rectangle
+		calculateLines(g2d);
+		
+		//draw the all lines of the parallel coordinate system
 		drawLines(g2d);
 
 	}
 
-	private void drawLines(Graphics2D g2d) {
+	/*
+	 * Calculates all y-positions for each element of the model and saves them as Array in yList
+	 */
+	private void createYPositions() {
+		yList= new ArrayList<int[]>();
+		for (int k = 0; k < model.getList().size(); k++ ){
+			int[] yPoints = new int[model.getDim()];
+			for (int i =0; i<model.getDim(); i++) {
+				int yPosition = calculatePosY(i, k);
+				yPoints[i] = yPosition;
+			}
+			yList.add(yPoints);
+		}
+	}
+
+	/*
+	 * Based on the xPositions, which are defined through the placement of the axes in the Parallel Coordinate System, 
+	 * and the yPositions, which are saved in the yList, 
+	 * this functions calculates the individual lines for each element of the model and changes the color of the lines to red, if the lines was selected. 
+	 */
+	private void calculateLines(Graphics2D g2d) {
+		lineList = new ArrayList<Line2D.Double[]>(); 
 		for (int i = 0; i < yList.size(); i++) {
 			int[] yPoints = yList.get(i);
-			g2d.setColor(Color.GRAY);
-			Line2D.Double[] lines = new Line2D.Double[xPoints.length-1];
+			Color color = Color.gray;
+			Line2D.Double[] lines = new Line2D.Double[yPoints.length-1];
 			for (int j = 0; j<yPoints.length-1; j++) {
 
 				Line2D.Double line = new Line2D.Double(xPoints[j], yPoints[order.get(j)], xPoints[j+1], yPoints[order.get(j+1)]);
 				lines[j]=line;
 				if(markerActive) {
 					if(line.intersects(markerRectangle)) {
-						g2d.setColor(Color.red);
-						System.out.println(j);
-					}
-				}else {
-					if(line.intersects(savedMarker)) {
-						g2d.setColor(Color.red);
+						color = Color.red;
 					}
 				}
 			}
-			for (int j = 0; j<lines.length; j++) {
+			if(markerActive) {
+				colorList[i] = color;
+			}
+			lineList.add(lines); 
+		}
+
+	}
+
+	/*
+	 * draws all lines in lineList in the corresponding color found in colorList
+	 */
+	private void drawLines(Graphics2D g2d) {
+		for (int i = 0; i<lineList.size(); i++) {
+			g2d.setColor(colorList[i]);
+			Line2D.Double[] lines = lineList.get(i);
+			for(int j=0; j<lines.length; j++) {
 				g2d.draw(lines[j]);
 			}
 		}
 
 	}
 
+	/*
+	 * calculates the actual yPosition for each value found in the model
+	 */
 	private int calculatePosY(int i, int k) {
 		double yValue = model.getList().get(k).getValues()[i];
 		double maxY = model.getRanges().get(i).getMax();
@@ -150,11 +150,10 @@ public class View extends JPanel {
 		this.model = model;
 	}
 	//calculating the axes
-	public void calculateLines() {
-		lineLength = getHeight()-2*borderSize; 
+	public void calculateAxes() {
 		lineDistance = (getWidth()-2*borderSize)/(model.getDim()-1);
-		elementDistance = lineLength/model.getList().size();
 	}
+	
 	public Rectangle2D getMarker() {
 		return markerRectangle;
 	}
@@ -163,12 +162,29 @@ public class View extends JPanel {
 	}
 	public void setMarkerInactive() {
 		markerActive = false; 
-		savedMarker = new Rectangle2D.Double(markerRectangle.getX(), markerRectangle.getY(), markerRectangle.getWidth(), markerRectangle.getHeight());
 	}
 
-	public void changeAxisMode(boolean b, int axis) {
+	/*
+	 * draws the coordinate system and assigns the labels for each axis
+	 */
+	private void drawCoordinateSystem(Graphics2D g2d) {
+		for (int i = 0; i < model.getDim(); i++) {
+			int xPosition = i*lineDistance+borderSize;
+			xPoints[i] = xPosition;
+			g2d.drawLine((int) xPosition, borderSize, (int) xPosition, getHeight()-borderSize);
+
+			String labelx = model.getLabels().get(order.get(i));
+			g2d.drawString(labelx, xPosition-labelx.length()*2, borderSize/2);}
+
+	}
+	
+	//Helper functions for changing the order of the axes
+
+	public int getMaxPos() {
+		return xPoints.length-1;
+	}
+	public void changeAxisStart(int axis) {
 		currentPosition = axis;
-		changeAxisMode = b;
 	}
 
 	public void changeOrder(int newPosition) {

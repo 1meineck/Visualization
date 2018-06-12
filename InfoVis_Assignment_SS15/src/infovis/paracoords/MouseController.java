@@ -36,12 +36,15 @@ public class MouseController implements MouseListener, MouseMotionListener {
 		if (e.getY() < view.borderSize) {
 			changeAxisMode = true;
 			int axis = (e.getX()-view.borderSize+view.lineDistance/2)/view.lineDistance;
-			view.changeAxisMode(true, axis);
+			if (axis > view.getMaxPos()) {
+				axis = view.getMaxPos();
+			}
+			view.changeAxisStart(axis);
 		} else {
 			changeAxisMode = false;
 			xStart = e.getX();
 			yStart = e.getY();
-			view.getMarker().setRect(0,0,0,0);
+			view.getMarker().setRect(xStart,yStart,0,0);
 			view.setMarkerActive();
 			view.repaint();
 		}
@@ -49,10 +52,13 @@ public class MouseController implements MouseListener, MouseMotionListener {
 
 	public void mouseReleased(MouseEvent e) {
 		if(changeAxisMode) {
-			view.changeOrder((e.getX()-view.borderSize+view.lineDistance/2)/view.lineDistance);
+			int axis = (e.getX()-view.borderSize+view.lineDistance/2)/view.lineDistance;	
+			if (axis > view.getMaxPos()) {
+				axis = view.getMaxPos();
+			}
+			view.changeOrder(axis);
 			view.repaint();
 			changeAxisMode = false;
-			view.changeAxisMode(false, 0);
 		}else {
 			view.setMarkerInactive();
 			view.getMarker().setRect(0,0,0,0);
@@ -62,13 +68,10 @@ public class MouseController implements MouseListener, MouseMotionListener {
 	}
 
 	public void mouseDragged(MouseEvent e) {
-		if(changeAxisMode) {
-			
-		} else {
+		if(!changeAxisMode) {
 			int x = e.getX()- xStart;
 			int y = e.getY() - yStart;
 			view.getMarker().setRect(xStart, yStart,x,y);
-			//TODO: this should be calculated correctly in view
 			view.repaint();
 		}
 	}
