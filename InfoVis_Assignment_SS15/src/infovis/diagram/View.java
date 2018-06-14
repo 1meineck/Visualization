@@ -106,7 +106,7 @@ public class View extends JPanel{
 		return marker;
 	}
 	public boolean overviewContains(double x, double y){
-		return overviewRect.contains(x, y);
+		return overviewRect.contains(toOverviewX(x), toOverviewY(y));
 	}
 
 	public double getOverviewScale() {

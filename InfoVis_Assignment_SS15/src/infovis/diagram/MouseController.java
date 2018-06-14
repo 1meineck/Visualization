@@ -109,10 +109,10 @@ public class MouseController implements MouseListener,MouseMotionListener {
 			view.setModel(modelFish);
 			view.repaint();
 
-		} else if (placeOverviewMode && view.overviewContains(view.toOverviewX(x), view.toOverviewY(y))) {
+		} else if (placeOverviewMode && view.overviewContains(x, y)) {
 			mouseOffsetX = x - view.getOverviewTranslateX();
 			mouseOffsetY = y - view.getOverviewTranslateY();
-		} else if (!placeOverviewMode && view.overviewContains(view.toOverviewX(x), view.toOverviewY(y))) { 
+		} else if (!placeOverviewMode && view.overviewContains(x, y)) { 
 			view.setTranslateX(- view.toOverviewX(x)*scale+view.getWidth()/2);
 			view.setTranslateY(- view.toOverviewY(y)*scale+view.getHeight()/2);
 		}
@@ -196,17 +196,18 @@ public class MouseController implements MouseListener,MouseMotionListener {
 			 * handle fisheye mode interactions
 			 */
 			fisheye.setMouseCoords(x, y, view);
-			System.out.println(x + " | " + y);
 			modelFish = fisheye.transform(model, view);
 			view.setModel(modelFish);
 			view.repaint();
 		} else if (edgeDrawMode){
 			drawingEdge.setX(view.toModelX(e.getX()));
 			drawingEdge.setY(view.toModelY(e.getY()));
-		} else if (!placeOverviewMode && view.overviewContains(view.toOverviewX(x), view.toOverviewY(y))) {
+		} 
+		// Drag marker! Set TranslateX & TranslateY based on the position of the mouse in the overview window
+		else if (!placeOverviewMode && view.overviewContains(x,y)) { 
 			view.setTranslateX(- view.toOverviewX(x)*scale+view.getWidth()/2);
 			view.setTranslateY(- view.toOverviewY(y)*scale+view.getHeight()/2);
-		} else if (placeOverviewMode && view.overviewContains(view.toOverviewX(x), view.toOverviewY(y))) {
+		} else if (placeOverviewMode && view.overviewContains(x, y)) {
 			view.setOverviewTranslateX(x-mouseOffsetX);
 			view.setOverviewTranslateY(y-mouseOffsetY);
 		}else if(selectedElement != null){
@@ -235,9 +236,9 @@ public class MouseController implements MouseListener,MouseMotionListener {
 			 * handle fish eye initial call
 			 */
 			fisheye= new Fisheye(); 
-			fisheye.setMouseCoords(view.getWidth()/2, view.getHeight()/2, view);
-			Model modelFish = fisheye.transform(model, view);
-			view.setModel(modelFish);
+			fisheye.setMouseCoords(view.getWidth()/2, view.getHeight()/2, view); // inital opening in the middle of the window
+			Model modelFish = fisheye.transform(model, view); // create fisheye Model
+			view.setModel(modelFish); // set view to fisheye
 			view.repaint();
 		} else {
 			Debug.p("new Normal Layout");
