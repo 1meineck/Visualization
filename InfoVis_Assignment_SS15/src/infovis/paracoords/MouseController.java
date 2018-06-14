@@ -18,6 +18,10 @@ public class MouseController implements MouseListener, MouseMotionListener {
 	private int xStart = 0;
 	private int yStart = 0;
 	private boolean changeAxisMode = false;
+	private int xEnd;
+	private int yEnd;
+	private int xLength;
+	private int yLength;
 
 	public void mouseClicked(MouseEvent e) {
 
@@ -69,9 +73,27 @@ public class MouseController implements MouseListener, MouseMotionListener {
 
 	public void mouseDragged(MouseEvent e) {
 		if(!changeAxisMode) {
-			int x = e.getX()- xStart;
-			int y = e.getY() - yStart;
-			view.getMarker().setRect(xStart, yStart,x,y);
+			int x = e.getX();
+			int y = e.getY();
+			int xBegin;
+			int yBegin;
+			if (x>=xStart) {
+				xLength = x-xStart;
+				xBegin = xStart;
+			}else {
+				xLength = xStart-x;
+				xBegin = x;
+				
+			}
+
+			if (y>=yStart) {
+				yLength = y-yStart;
+				yBegin = yStart;
+			}else {
+				yLength = yStart-y;
+				yBegin = y;
+			}
+			view.getMarker().setRect(xBegin, yBegin,xLength,yLength);
 			view.repaint();
 		}
 	}
