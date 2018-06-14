@@ -82,9 +82,9 @@ public class Model {
     	addVertex(new Vertex(270,230));
     	addVertex(new Vertex(210,290));
     	addVertex(new Vertex(400,90));
-    	addVertex(new Vertex(400,690));
+    	addVertex(new Vertex(400,290));
     	addVertex(new Vertex(700,90));
-    	addVertex(new Vertex(700,490));
+    	addVertex(new Vertex(700,290));
 	}
 	public boolean isEmpty(){
 		return elements.isEmpty();
