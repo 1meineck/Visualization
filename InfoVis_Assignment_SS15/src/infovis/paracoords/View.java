@@ -51,9 +51,8 @@ public class View extends JPanel {
 		// create yList with all y Positions of each element in the model
 		createYPositions();
 		
-
-		// calculate the lines for each element in the model and set the color for the lines in the colorList to red, if they were selected by the marker rectangle
-		calculateLines(g2d);
+		// calculate the lines for each element in the model and set the color to red, if they are selected by the marker rectangle
+		calculateLines();
 		
 		//draw the all lines of the parallel coordinate system
 		drawLines(g2d);
@@ -76,11 +75,9 @@ public class View extends JPanel {
 	}
 
 	/*
-	 * Based on the xPositions, which are defined through the placement of the axes in the Parallel Coordinate System, 
-	 * and the yPositions, which are saved in the yList, 
-	 * this functions calculates the individual lines for each element of the model and changes the color of the lines to red, if the lines was selected. 
+	 * This functions calculates the individual lines for each element of the model and changes the assigned color of the lines to red, if the lines was selected. 
 	 */
-	private void calculateLines(Graphics2D g2d) {
+	private void calculateLines() {
 		lineList = new ArrayList<Line2D.Double[]>(); 
 		for (int i = 0; i < yList.size(); i++) {
 			int[] yPoints = yList.get(i);
@@ -105,7 +102,7 @@ public class View extends JPanel {
 	}
 
 	/*
-	 * draws all lines in lineList in the corresponding color found in colorList
+	 * draws all lines in lineList
 	 */
 	private void drawLines(Graphics2D g2d) {
 		for (int i = 0; i<lineList.size(); i++) {
@@ -119,7 +116,7 @@ public class View extends JPanel {
 	}
 
 	/*
-	 * calculates the actual yPosition for each value found in the model
+	 * calculates the yPosition in the view for each value found in the model
 	 */
 	private int calculatePosY(int i, int k) {
 		double yValue = model.getList().get(k).getValues()[i];
