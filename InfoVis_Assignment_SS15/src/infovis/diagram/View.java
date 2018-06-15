@@ -47,22 +47,28 @@ public class View extends JPanel{
 		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 		
 		g2D.clearRect(0, 0, getWidth(), getHeight());
+		
+		// Set translation & scale for the diagram. Paint.
 		g2D.translate(translateX, translateY);
 		g2D.scale(scale, scale);
 		paintDiagram(g2D);
 		
+		
+		// Reset translation & scale
 		g2D.scale(1/scale, 1/scale);
 		g2D.translate(-translateX, -translateY);
 		
+		// Set translation & scale for overview
 		g2D.translate(overviewTranslateX, overviewTranslateY);
 		g2D.scale(overviewScale, overviewScale);
 
+		//draw overview
 		g2D.clearRect(0, 0, getWidth(), getHeight());
 		overviewRect.setRect(0, 0, getWidth(), getHeight());
 		g2D.draw(overviewRect);
 		paintDiagram(g2D);
 		
-	
+		// set translation & scale for the marker
 		g2D.scale(1/scale, 1/scale);
 		g2D.translate(-translateX, -translateY);
 		
@@ -104,7 +110,10 @@ public class View extends JPanel{
 	}
 	public Rectangle2D getMarker(){
 		return marker;
-	}
+	}	
+
+	
+	// returns true if mouse position x, y is inside the overviewRect
 	public boolean overviewContains(double x, double y){
 		return overviewRect.contains(toOverviewX(x), toOverviewY(y));
 	}
@@ -112,23 +121,6 @@ public class View extends JPanel{
 	public double getOverviewScale() {
 		return overviewScale;
 	}
-	
-	
-
-	public double toModelX(double x){
-		return (x-translateX)/scale;
-	}
-	public double toModelY(double y){
-		return (y-translateY)/scale;
-	}
-	public double toViewX(double x) {
-		return x*scale + translateX;
-	}
-	public double toViewY(double y) {
-		return y*scale + translateY;
-	}
-	
-	
 	
 	public double getOverviewTranslateX() {
 		return overviewTranslateX;
@@ -143,11 +135,26 @@ public class View extends JPanel{
 		this.overviewTranslateY = overviewTranslateY;
 	}
 	
+	
+	
 	public double toOverviewX(double x) {
 		return (x - overviewTranslateX)/overviewScale;
 	}
 	public double toOverviewY(double y) {
 		return (y - overviewTranslateY)/overviewScale;
+	}
+	
+	public double toModelX(double x){
+		return (x-translateX)/scale;
+	}
+	public double toModelY(double y){
+		return (y-translateY)/scale;
+	}
+	public double toViewX(double x) {
+		return x*scale + translateX;
+	}
+	public double toViewY(double y) {
+		return y*scale + translateY;
 	}
 	
 	

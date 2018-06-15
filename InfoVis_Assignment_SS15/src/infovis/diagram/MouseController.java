@@ -100,25 +100,27 @@ public class MouseController implements MouseListener,MouseMotionListener {
 			drawingEdge = new DrawingEdge((Vertex)getElementContainingPosition(x/scale,y/scale));
 			model.addElement(drawingEdge);
 		} else if (fisheyeMode){
-			/*
-			 * do handle interactions in fisheye mode
-			 */
 			fisheye= new Fisheye(); 
-			fisheye.setMouseCoords(x, y, view);
-			Model modelFish = fisheye.transform(model, view);
-			view.setModel(modelFish);
-			view.repaint();
+			fisheye.setMouseCoords(x, y, view); //set center of fisheye
+			Model modelFish = fisheye.transform(model, view); // create fisheye model
+			view.setModel(modelFish); // set view to fisheye
+			view.repaint(); // repaint
 
-		} else if (placeOverviewMode && view.overviewContains(x, y)) {
-			mouseOffsetX = x - view.getOverviewTranslateX();
-			mouseOffsetY = y - view.getOverviewTranslateY();
-		} else if (!placeOverviewMode && view.overviewContains(x, y)) { 
-			view.setTranslateX(- view.toOverviewX(x)*scale+view.getWidth()/2);
+		} 
+		// start placing the overview if the mouse is pressed inside the overviewRect while the overviewMode is active
+		else if (placeOverviewMode && view.overviewContains(x, y)) 
+		{	
+			mouseOffsetX = x - view.getOverviewTranslateX(); // calculate the x-offset
+			mouseOffsetY = y - view.getOverviewTranslateY(); // calculate the y-offset
+		} 
+		// set the center of the marker at the mousePosition if the mouse is pressed inside the overviewRect while overviewMode is inactive
+		else if (!placeOverviewMode && view.overviewContains(x, y)) 
+		{ 
+			view.setTranslateX(- view.toOverviewX(x)*scale+view.getWidth()/2); 
 			view.setTranslateY(- view.toOverviewY(y)*scale+view.getHeight()/2);
 		}
 
 		else {
-
 			selectedElement = getElementContainingPosition(view.toModelX(x), view.toModelY(y));
 			double selectedX = view.toViewX(selectedElement.getX());
 			double selectedY = view.toViewY(selectedElement.getY()); 
