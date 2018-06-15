@@ -209,25 +209,15 @@ public class MouseController implements MouseListener,MouseMotionListener {
 		else if (!placeOverviewMode && view.overviewContains(x,y)) { 
 			view.setTranslateX(- view.toOverviewX(x)*scale+view.getWidth()/2);
 			view.setTranslateY(- view.toOverviewY(y)*scale+view.getHeight()/2);
-		} else if (placeOverviewMode && view.overviewContains(x, y)) {
+		} 
+		// Set overviewRect to mousePosition. Offset!
+		else if (placeOverviewMode && view.overviewContains(x, y)) {
 			view.setOverviewTranslateX(x-mouseOffsetX);
 			view.setOverviewTranslateY(y-mouseOffsetY);
 		}else if(selectedElement != null){
 			selectedElement.updatePosition(view.toModelX(x-mouseOffsetX), view.toModelY(y-mouseOffsetY));
 		}
 		view.repaint();
-	}
-	public void mouseMoved(MouseEvent e) {
-	}
-	public boolean isDrawingEdges() {
-		return edgeDrawMode;
-	}
-	public void setDrawingEdges(boolean drawingEdges) {
-		this.edgeDrawMode = drawingEdges;
-	}
-	public void setPlaceOverview(boolean b) {
-		this.placeOverviewMode = b;
-
 	}
 
 	public void setFisheyeMode(boolean b) {
@@ -262,6 +252,15 @@ public class MouseController implements MouseListener,MouseMotionListener {
 		return currentElement;
 	}
 
-
-
+	public void mouseMoved(MouseEvent e) {
+	}
+	public boolean isDrawingEdges() {
+		return edgeDrawMode;
+	}
+	public void setDrawingEdges(boolean drawingEdges) {
+		this.edgeDrawMode = drawingEdges;
+	}
+	public void setPlaceOverview(boolean b) {
+		this.placeOverviewMode = b;
+	}
 }
