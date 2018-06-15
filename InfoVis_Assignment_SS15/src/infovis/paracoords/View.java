@@ -21,7 +21,6 @@ public class View extends JPanel {
 	private ArrayList<int[]> yList;
 	private ArrayList<Integer> order;
 	private int currentPosition;
-	private Color[] colorList;
 	private ArrayList<Line2D.Double[]> lineList; 
 
 	@Override
@@ -52,13 +51,6 @@ public class View extends JPanel {
 		// create yList with all y Positions of each element in the model
 		createYPositions();
 		
-		// set up coloring of Lines
-		if (colorList == null) {
-			colorList = new Color[yList.size()];
-			for (int i = 0; i<colorList.length; i++) {
-				colorList[i]=Color.gray;
-			}
-		}
 
 		// calculate the lines for each element in the model and set the color for the lines in the colorList to red, if they were selected by the marker rectangle
 		calculateLines(g2d);
@@ -105,7 +97,7 @@ public class View extends JPanel {
 				}
 			}
 			if(markerActive) {
-				colorList[i] = color;
+				model.getList().get(i).setColor(color);
 			}
 			lineList.add(lines); 
 		}
@@ -117,7 +109,7 @@ public class View extends JPanel {
 	 */
 	private void drawLines(Graphics2D g2d) {
 		for (int i = 0; i<lineList.size(); i++) {
-			g2d.setColor(colorList[i]);
+			g2d.setColor(model.getList().get(i).getColor());
 			Line2D.Double[] lines = lineList.get(i);
 			for(int j=0; j<lines.length; j++) {
 				g2d.draw(lines[j]);
