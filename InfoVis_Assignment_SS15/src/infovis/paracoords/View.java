@@ -106,11 +106,16 @@ public class View extends JPanel {
 	 */
 	private void drawLines(Graphics2D g2d) {
 		for (int i = 0; i<lineList.size(); i++) {
-			g2d.setColor(model.getList().get(i).getColor());
+			Color color = model.getList().get(i).getColor(); 
+			if (color == Color.red) {
+				g2d.setStroke(new BasicStroke(2));
+			}
+			g2d.setColor(color);
 			Line2D.Double[] lines = lineList.get(i);
 			for(int j=0; j<lines.length; j++) {
 				g2d.draw(lines[j]);
 			}
+			g2d.setStroke(new BasicStroke(1));
 		}
 
 	}
