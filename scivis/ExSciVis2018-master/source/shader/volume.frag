@@ -72,6 +72,25 @@ binary_search(vec3 previous_pos, vec3 sampling_pos)
     }
 }
 
+vec3
+get_gradient(vec3 sampling_pos)
+{
+    float step_x = max_bounds.x/volume_dimensions.x;
+    float step_y = max_bounds.y/volume_dimensions.y;
+    float step_z = max_bounds.z/volume_dimensions.z;
+
+
+    float x = sampling_pos.x;
+    float y = sampling_pos.y; 
+    float z = sampling_pos.z;
+
+    float dx = (get_sample_data(vec3(x+ step_x, y, z))-get_sample_data(vec3(x-step_x,y,z)))/2;
+    float dy = (get_sample_data(vec3(x, y+step_y, z))-get_sample_data(vec3(x,y-step_y,z)))/2;
+    float dz = (get_sample_data(vec3(x, y, z+step_z))-get_sample_data(vec3(x,y,z-step_z)))/2;
+
+    return vec3(dx, dy, dz);
+}
+
 void main()
 {
     /// One step trough the volume
@@ -119,17 +138,19 @@ void main()
 #endif 
     
 #if TASK == 11
-	vec4 sum_val = vec4(0.0, 0.0, 0.0, 0.0);
-	vec4 avg_val = vec4(0.0, 0.0, 0.0, 0.0);
-	int counter = 0;
-	float fac = 3.0;
+    vec4 sum_val = vec4(0.0, 0.0, 0.0, 0.0);
+    vec4 avg_val = vec4(0.0, 0.0, 0.0, 0.0);
+    vec4 grad_val = vec4(0.0, 0.0, 0.0, 0.0);
+    int counter = 0;
+    float fac = 3.0;
 
     // the traversal loop,
     // termination when the sampling position is outside volume boundarys
     // another termination condition for early ray termination is added
+    
     while (inside_volume)
     {      
-    	counter++;
+        counter++;
         // get sample
         float s = get_sample_data(sampling_pos);
 
@@ -156,41 +177,67 @@ void main()
     }
     dst = avg_val;
 
+
+
+
 #endif
     
 #if TASK == 12 || TASK == 13
+vec4 grad_val = vec4(0.0, 0.0, 0.0, 0.0);
     vec3 previous_pos = sampling_pos;
+
+    vec3 test = get_gradient(sampling_pos);
     // the traversal loop,
     // termination when the sampling position is outside volume boundarys
     // another termination condition for early ray termination is added
     while (inside_volume)
     {
+        vec3 new_pos = sampling_pos;
         // get sample
-        float s = get_sample_data(sampling_pos);
+        float s = get_sample_data(new_pos);
+
 
         if (s >= iso_value) {
             if (TASK==13){
-                vec3 new_pos = binary_search(previous_pos, sampling_pos);
+                new_pos = binary_search(previous_pos, sampling_pos);
                 s = get_sample_data(new_pos);
             }
 
-            dst = texture(transfer_texture, vec2(s, s));
-        }
+        dst = texture(transfer_texture, vec2(s, s));
+        
+        
+
       
 /*#if TASK == 13// Binary Search
         IMPLEMENT
 #endif*/
 
-        // increment the ray sampling position
-        sampling_pos += ray_increment;
-        
+
 #if ENABLE_LIGHTNING == 1 // Add Shading
-        IMPLEMENTLIGHT;
+    vec3 light_direction = normalize(new_pos-light_position);
+    vec3 grad = normalize(get_gradient(new_pos));
+    vec3 view_direction = normalize(camera_location - new_pos);
+    vec3 reflect_direction = normalize(reflect(-light_direction, grad));
+
+    vec3 ambient = light_ambient_color;
+
+    float diff = max(dot(light_direction, grad), 0.0); 
+    vec3 diffuse = light_diffuse_color*diff;
+
+    vec3 spec = light_specular_color * pow(max(dot(view_direction, reflect_direction), 0.0), light_ref_coef);
+
+    //vec3 result = diffuse+spec; 
+
+    dst = (vec4(ambient, 1.0) + vec4(diffuse, 1.0)+ vec4(spec, 1.0))*dst;
+
+        //IMPLEMENTLIGHT;
 #if ENABLE_SHADOWING == 1 // Add Shadows
         IMPLEMENTSHADOW;
 #endif
 #endif
-
+}
+        // increment the ray sampling position
+        sampling_pos += ray_increment;
         // update the loop termination condition
         inside_volume = inside_volume_bounds(sampling_pos);
     }
@@ -226,4 +273,3 @@ void main()
     // return the calculated color value
     FragColor = dst;
 }
-
