@@ -279,154 +279,78 @@ break;
     // termination when the sampling position is outside volume boundarys
     // another termination condition for early ray termination is added
 
-    float s = get_sample_data(sampling_pos);
-    float trans = 1.0;
-    float trans_prev = 1.0;
-    vec3 inten = vec3(0.0,0.0,0.0);
-    
-    vec3 last_pos = vec3(0,0,0);
-    bool found_last_position = false;
-    bool inside_volume_2 = true;
-    
+    dst = vec4(0.0,0.0,0.0,0.0); 
+    float trans = 1.0; 
+    float prev_alpha = 0.0; 
+    float opacity_correction = 1.0; 
 
-    #if FRONT_TO_BACK == 1
-        while(inside_volume){
-            s = get_sample_data(sampling_pos);
-            vec4 color = texture(transfer_texture, vec2(s, s));
-            float opacity = color.a; 
-            if (ENABLE_OPACITY_CORRECTION == 1){
-              opacity = (1-pow((1-opacity), (sampling_distance_ref/sampling_distance)));
-            }
-            if(trans > 0.1){
-                trans *= trans_prev; 
-                inten = inten + trans * color.rgb * opacity;
-            }
-        
-            else{
+    while(inside_volume)
+    {
+        float s = get_sample_data(sampling_pos); 
+        vec4 color = texture(transfer_texture, vec2(s,s)); 
 
-                break;
-            }
-
-            vec4 light = vec4(0.0,0.0,0.0,1.0);
-
-            if (ENABLE_LIGHTNING == 1){
-
-                vec3 normal = normalize(get_gradient(sampling_pos)); 
-                vec3 light_direction = normalize(light_position-sampling_pos);
-
-                float cosTheta = clamp(dot(normal, light_direction), 0, 1); 
-
-                vec3 eye = normalize(camera_location-sampling_pos);
-                vec3 reflect = (-light_direction,normal); 
-
-                float cosAlpha = clamp(dot(eye,reflect), 0, 1);
-
-                float light_power = 7;
-                float visibility = 1.0;
-
-                /*
-
-                if (ENABLE_SHADOWING == 1){// Add Shadows
-    
-                    /// One step trough the volume
-                    vec3 ray_shadow_increment      = normalize(sampling_pos - light_position) * sampling_distance;
-                    /// Position in Volume
-                    vec3 shadow_sampling_pos       = sampling_pos + ray_shadow_increment; // test, increment just to be sure we are in the volume
-                
-                    bool inside_shadow_volume = inside_volume_bounds(shadow_sampling_pos);
-                
-                    while(inside_shadow_volume){
-                        float s_shadow = get_sample_data(shadow_sampling_pos); 
-                
-                        if(s_shadow>=iso_value)
-                        {
-                            visibility = 0.0;
-                        }
-                        shadow_sampling_pos += ray_shadow_increment; 
-                        inside_shadow_volume =inside_volume_bounds(shadow_sampling_pos);
-                    }
-                } 
-                */
-
-                light.rgb = light_ambient_color + 
-                light_diffuse_color * light_power * cosTheta * visibility + 
-                light_specular_color * light_power * pow(cosAlpha, light_ref_coef) * visibility;
-                dst = vec4(inten.r, inten.g, inten.b, 1-trans) * light;
-            }
-            else{
-                dst = vec4(inten.r, inten.g, inten.b, 1-trans);
-            }
-
-            // increment the ray sampling position
-            sampling_pos += ray_increment;
-            trans_prev = 1-opacity;
-            // update the loop termination condition
-            inside_volume = inside_volume_bounds(sampling_pos);
-        }
-    #else // BACK_TO_FRONT
-        while(inside_volume){
-            sampling_pos += ray_increment;
-            inside_volume = inside_volume_bounds(sampling_pos);
-        }
-        
-        inside_volume = true;
-
-        while (inside_volume)
-        {   
-            s = get_sample_data(sampling_pos);
-            vec4 color = texture(transfer_texture, vec2(s, s));
-
-            float opacity = color.a; 
-            if (ENABLE_OPACITY_CORRECTION == 1){
-              opacity = (1-pow((1-opacity), (sampling_distance_ref/sampling_distance)));
-            }
-            inten = color.rgb*opacity + inten * (1-opacity); 
-
-            vec4 light = vec4(0.0,0.0,0.0,1.0);
-
-            /*
-            if (ENABLE_LIGHTNING == 1){
-
-                vec3 normal = normalize(get_gradient(sampling_pos)); 
-                vec3 light_direction = normalize(light_position-sampling_pos);
-
-                float cosTheta = clamp(dot(normal, light_direction), 0, 1); 
-
-                vec3 eye = normalize(camera_location-sampling_pos);
-                vec3 reflect = (-light_direction,normal); 
-
-                float cosAlpha = clamp(dot(eye,reflect), 0, 1);
-
-                float light_power = 7;
-                float visibility = 1.0;
-
-                light.rgb = light_ambient_color + 
-                light_diffuse_color * light_power * cosTheta * visibility + 
-                light_specular_color * light_power * pow(cosAlpha, light_ref_coef) * visibility;
-
-                dst = vec4(inten.r, inten.g, inten.b, 1.0) * light;
-              } */
-              //else{
-                dst = vec4(inten.r, inten.g, inten.b, 1.0);
-              //}
-
-            sampling_pos -= ray_increment; 
-            inside_volume = inside_volume_bounds(sampling_pos);
-            
-        }
-        // get sample
-    #endif
-#if ENABLE_OPACITY_CORRECTION == 1 // Opacity Correction
-        
+#if ENABLE_OPACITY_CORRECTION == 1
+        opacity_correction = (sampling_distance/sampling_distance_ref)*255;
 #else
-        //float s = get_sample_data(sampling_pos);
 #endif
-        // dummy code
-        
-/*#if ENABLE_LIGHTNING == 1 // Add Shading
-        IMPLEMENT;
+    if (FRONT_TO_BACK==1){
+        if (trans > 0.01){
+            float alpha = color.a; 
+            alpha = 1-pow(1-alpha, opacity_correction); 
+            trans = trans * (1 - prev_alpha);
+            dst = dst + color * trans * alpha; 
+            prev_alpha = alpha;
+        }
+    }
+#if ENABLE_LIGHTNING == 1 // Add Shading
+    
+    vec3 normal = normalize(get_gradient(sampling_pos));
+    
+    if (length(get_gradient(sampling_pos)) > 0.1) {
+    
+    vec4 norm = vec4(normal , 1.0);
+    vec3 light_direction = normalize(light_position - sampling_pos);
+    vec3 eye = normalize(camera_location-sampling_pos);
+    vec3 reflect = (-light_direction,normal);
+
+    float cosTheta = clamp(dot(normal,light_direction),0,1);
+    float cosAlpha = clamp(dot(eye, reflect),0, 1);
+
+    vec4 ambient = vec4(light_ambient_color , 1.0);
+    vec4 diffuse = vec4(light_diffuse_color,1.0)*cosTheta;
+    vec4 specular = vec4(light_specular_color,1.0)* pow(cosAlpha,light_ref_coef);
+    
+    dst += (ambient + diffuse + specular)*(1-trans)*(1/sampling_distance_ref)*(0.05);
+    }
 #endif
-*/        
+
+        // increment the ray sampling position
+        sampling_pos += ray_increment;
+
+
+        // update the loop termination condition
+        inside_volume = inside_volume_bounds(sampling_pos);
+    }
+
+#if FRONT_TO_BACK != 1
+    sampling_pos -= ray_increment; 
+    inside_volume = inside_volume_bounds(sampling_pos); 
+    
+    dst = vec4(0.0,0.0,0.0,0.0); 
+
+    while (inside_volume){
+        float s = get_sample_data(sampling_pos); 
+        vec4 color = texture(transfer_texture, vec2(s,s)); 
+        float alpha = 1-pow(1-color.a, opacity_correction); 
+        dst = alpha*color + (1 - alpha)*dst; 
+
+        sampling_pos -= ray_increment; 
+        inside_volume = inside_volume_bounds(sampling_pos);
+    }
+    dst.a = 1.0;
+
+#endif
+          
     
 #endif 
 
